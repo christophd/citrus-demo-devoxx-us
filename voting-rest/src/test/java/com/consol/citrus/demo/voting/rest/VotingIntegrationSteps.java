@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.integration;
+package com.consol.citrus.demo.voting.rest;
 
 import com.consol.citrus.annotations.CitrusEndpoint;
 import com.consol.citrus.annotations.CitrusResource;

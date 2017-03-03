@@ -13,125 +13,22 @@
   <packaging>war</packaging>
   
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <version>${spring.boot.version}</version>
-          <configuration>
-            <fork>true</fork>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
     <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <configuration>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.0.0</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.activemq.tooling</groupId>
-        <artifactId>activemq-maven-plugin</artifactId>
-        <version>${activemq.version}</version>
-        <configuration>
-          <fork>false</fork>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>0.19.0</version>
-        <configuration>
-          <verbose>true</verbose>
-          <images>
-            <image>
-              <alias>voting-app</alias>
-              <name>citrus/voting-app:${project.version}</name>
-              <build>
-                <from>fabric8/tomcat-8:latest</from>
-                <tags>
-                  <tag>latest</tag>
-                </tags>
-                <assembly>
-                  <inline>
-                    <files>
-                      <file>
-                        <source>${settings.localRepository}/com/consol/citrus/demo/voting-app/${project.version}/voting-app-${project.version}.war</source>
-                        <destName>ROOT.war</destName>
-                        <outputDirectory>.</outputDirectory>
-                      </file>
-                    </files>
-                  </inline>
-                </assembly>
-              </build>
-              <run>
-                <namingStrategy>alias</namingStrategy>
-                <env>
-                  <CATALINA_OPTS>-Xmx64m</CATALINA_OPTS>
-                </env>
-                <ports>
-                  <port>8080:8080</port>
-                </ports>
-                <wait>
-                  <http>
-                    <url>http://localhost:8080/voting</url>
-                    <method>GET</method>
-                    <status>200</status>
-                  </http>
-                  <time>60000</time>
-                  <shutdown>500</shutdown>
-                </wait>
-                <log>
-                  <enabled>true</enabled>
-                  <color>green</color>
-                </log>
-              </run>
-            </image>
-            <image>
-              <alias>voting-app-tests</alias>
-              <name>citrus/voting-app-tests:${project.version}</name>
-              <build>
-                <from>consol/citrus:2.7</from>
-                <tags>
-                  <tag>latest</tag>
-                </tags>
-                <assembly>
-                  <descriptorRef>project</descriptorRef>
-                </assembly>
-              </build>
-              <run>
-                <namingStrategy>alias</namingStrategy>
-                <volumes>
-                  <bind>
-                    <volume>/var/run/docker.sock:/var/run/dockerhost/docker.sock</volume>
-                  </bind>
-                </volumes>
-                <links>
-                  <link>voting-app</link>
-                </links>
-                <dependsOn>
-                  <dependsOn>voting-app</dependsOn>
-                </dependsOn>
-                <wait>
-                  <log>BUILD SUCCESS</log>
-                  <time>60000</time>
-                  <shutdown>500</shutdown>
-                </wait>
-                <log>
-                  <enabled>true</enabled>
-                  <color>green</color>
-                </log>
-              </run>
-            </image>
-          </images>
         </configuration>
       </plugin>
     </plugins>
@@ -234,55 +131,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
-    </dependency>
-
-    <!-- Citrus -->
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-core</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-java-dsl</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-http</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-jms</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-mail</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-docker</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-selenium</artifactId>
-      <version>${citrus.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.consol.citrus</groupId>
-      <artifactId>citrus-cucumber</artifactId>
-      <version>${citrus.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -295,107 +143,15 @@
     </dependency>
     <dependency>
       <groupId>info.cukes</groupId>
-      <artifactId>cucumber-junit</artifactId>
+      <artifactId>cucumber-java</artifactId>
       <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>info.cukes</groupId>
-      <artifactId>cucumber-spring</artifactId>
+      <artifactId>cucumber-junit</artifactId>
       <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>docker</id>
-      <properties>
-        <test>skip</test>
-        <it.test>skip</it.test>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>io.fabric8</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>start</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>build</goal>
-                  <goal>start</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>stop</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    
-    <profile>
-      <id>embedded</id>
-      <activation>
-        <property>
-          <name>embedded</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.activemq.tooling</groupId>
-            <artifactId>activemq-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>start-activemq</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                </configuration>
-              </execution>
-              <execution>
-                <id>stop-activemq</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>pre</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>post</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

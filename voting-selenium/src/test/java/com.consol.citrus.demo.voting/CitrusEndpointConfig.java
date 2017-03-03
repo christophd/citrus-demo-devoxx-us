@@ -18,19 +18,13 @@ package com.consol.citrus.demo.voting;
 
 import com.consol.citrus.container.SequenceAfterSuite;
 import com.consol.citrus.container.SequenceAfterTest;
-import com.consol.citrus.docker.client.DockerClient;
 import com.consol.citrus.dsl.endpoint.CitrusEndpoints;
 import com.consol.citrus.dsl.runner.*;
 import com.consol.citrus.http.client.HttpClient;
-import com.consol.citrus.jms.endpoint.JmsEndpoint;
-import com.consol.citrus.mail.server.MailServer;
 import com.consol.citrus.selenium.endpoint.SeleniumBrowser;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.openqa.selenium.remote.BrowserType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.jms.ConnectionFactory;
 
 /**
  * @author Christoph Deppisch
@@ -47,43 +41,10 @@ public class CitrusEndpointConfig {
     }
 
     @Bean
-    public DockerClient dockerClient() {
-        return CitrusEndpoints.docker()
-                .client()
-                .build();
-    }
-
-    @Bean
     public SeleniumBrowser browser() {
         return CitrusEndpoints.selenium()
                 .browserType(BrowserType.CHROME)
                 .build();
-    }
-
-    @Bean
-    public MailServer mailServer() {
-        return CitrusEndpoints.mail()
-                .server()
-                .port(2222)
-                .autoStart(true)
-                .autoAccept(true)
-                .build();
-    }
-
-    @Bean
-    public JmsEndpoint reportingEndpoint() {
-        return CitrusEndpoints.jms()
-                .asynchronous()
-                .connectionFactory(connectionFactory())
-                .destination("jms.voting.report")
-                .build();
-    }
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-        activeMQConnectionFactory.setBrokerURL("tcp://localhost:61616");
-        return activeMQConnectionFactory;
     }
 
     @Bean

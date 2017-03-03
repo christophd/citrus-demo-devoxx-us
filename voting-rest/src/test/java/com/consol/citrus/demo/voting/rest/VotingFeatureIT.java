@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.integration;
+package com.consol.citrus.demo.voting.rest;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
