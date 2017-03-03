@@ -47,7 +47,7 @@ public class VotingSteps {
         votingOptions("yes:no");
     }
 
-    @Given("^voting options are \"([^\"]*)\"$")
+    @Given("^(?:the )?voting options are \"([^\"]*)\"$")
     public void votingOptions(String optionList) {
         String[] options = optionList.split(":");
         List<VoteOption> voteOptions = new ArrayList<>();
@@ -86,32 +86,32 @@ public class VotingSteps {
         }
     }
 
-    @When("^voting is closed$")
+    @When("^(?:the )?voting is closed$")
     public void votingIsClosed() {
         votingService.get(votingId.toString()).setClosed(true);
     }
 
-    @Then("^votes of option \"([^\"]*)\" should be (\\d+)$")
+    @Then("^(?:the )?votes of option \"([^\"]*)\" should be (\\d+)$")
     public void votesOfOptionShouldBe(String option, int count) {
         Assert.assertEquals(count, votingService.get(votingId.toString()).getOption(option).getVotes());
     }
 
-    @Then("^top vote should be \"([^\"]*)\"$")
+    @Then("^(?:the )?top vote should be \"([^\"]*)\"$")
     public void topVoteShouldBe(String option) {
         Assert.assertEquals(option, votingService.getTopVote(votingService.get(votingId.toString())).getName());
     }
 
-    @Then("^voting should have (\\d+) options$")
+    @Then("^(?:the )?voting should have (\\d+) options$")
     public void votingShouldHaveOptions(int optionCount) {
         Assert.assertEquals(optionCount, votingService.get(votingId.toString()).getOptions().size());
     }
 
-    @Then("^voting should have option \"([^\"]*)\"$")
+    @Then("^(?:the )?voting should have option \"([^\"]*)\"$")
     public void votingShouldHaveOption(String option) {
         Assert.assertNotNull(votingService.get(votingId.toString()).getOption(option));
     }
 
-    @Then("^voting title should be \"([^\"]*)\"$")
+    @Then("^(?:the )?voting title should be \"([^\"]*)\"$")
     public void votingTitleShouldBe(String title) {
         Assert.assertEquals(title, votingService.get(votingId.toString()).getTitle());
     }

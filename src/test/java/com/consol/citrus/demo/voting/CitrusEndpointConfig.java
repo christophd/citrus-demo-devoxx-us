@@ -16,11 +16,17 @@
 
 package com.consol.citrus.demo.voting;
 
+import com.consol.citrus.container.SequenceAfterSuite;
+import com.consol.citrus.container.SequenceAfterTest;
+import com.consol.citrus.docker.client.DockerClient;
 import com.consol.citrus.dsl.endpoint.CitrusEndpoints;
+import com.consol.citrus.dsl.runner.*;
 import com.consol.citrus.http.client.HttpClient;
 import com.consol.citrus.jms.endpoint.JmsEndpoint;
 import com.consol.citrus.mail.server.MailServer;
+import com.consol.citrus.selenium.endpoint.SeleniumBrowser;
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.openqa.selenium.remote.BrowserType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,6 +43,20 @@ public class CitrusEndpointConfig {
         return CitrusEndpoints.http()
                 .client()
                 .requestUrl("http://localhost:8080/rest/services")
+                .build();
+    }
+
+    @Bean
+    public DockerClient dockerClient() {
+        return CitrusEndpoints.docker()
+                .client()
+                .build();
+    }
+
+    @Bean
+    public SeleniumBrowser browser() {
+        return CitrusEndpoints.selenium()
+                .browserType(BrowserType.CHROME)
                 .build();
     }
 
@@ -66,4 +86,23 @@ public class CitrusEndpointConfig {
         return activeMQConnectionFactory;
     }
 
+    @Bean
+    public SequenceAfterSuite afterSuite() {
+        return new TestRunnerAfterSuiteSupport() {
+            @Override
+            public void afterSuite(TestRunner runner) {
+                runner.selenium(builder -> builder.browser(browser()).stop());
+            }
+        };
+    }
+
+    @Bean
+    public SequenceAfterTest afterTest() {
+        return new TestRunnerAfterTestSupport() {
+            @Override
+            public void afterTest(TestRunner runner) {
+                runner.sleep(500);
+            }
+        };
+    }
 }

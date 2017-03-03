@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.predefined;
+package com.consol.citrus.demo.voting.docker;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
  * @author Christoph Deppisch
  */
+@Ignore
 @RunWith(Cucumber.class)
 @CucumberOptions(
         glue = { "com.consol.citrus.cucumber.step.runner" },
         plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
-public class VotingPredefinedFeatureIT {
+public class VotingDockerFeatureIT {
 }

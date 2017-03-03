@@ -6,6 +6,7 @@
   <artifactId>voting-demo</artifactId>
   <name>voting-demo</name>
   <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,9 +15,9 @@
     <spring.boot.version>1.5.0.RELEASE</spring.boot.version>
     <activemq.version>5.14.3</activemq.version>
     <slf4j.version>1.7.22</slf4j.version>
-    <testng.version>6.10</testng.version>
+    <junit.version>4.12</junit.version>
     <cucumber.version>1.2.5</cucumber.version>
-    <citrus.version>2.7</citrus.version>
+    <citrus.version>2.7.1-SNAPSHOT</citrus.version>
   </properties>
 
   <build>
@@ -59,12 +60,6 @@
         <version>${activemq.version}</version>
         <configuration>
           <fork>false</fork>
-          <systemProperties>
-            <property>
-              <name>log4j.configuration</name>
-              <value>log4j.properties</value>
-            </property>
-          </systemProperties>
         </configuration>
       </plugin>
 
@@ -72,16 +67,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.19.1</version>
         <configuration>
-          <systemProperties>
-            <property>
-              <name>javax.xml.parsers.SAXParserFactory</name>
-              <value>org.apache.xerces.jaxp.SAXParserFactoryImpl</value>
-            </property>
-            <property>
-              <name>user.language</name>
-              <value>en</value>
-            </property>
-          </systemProperties>
           <forkMode>once</forkMode>
           <failIfNoTests>false</failIfNoTests>
           <excludes>
@@ -105,6 +90,96 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.19.0</version>
+        <configuration>
+          <verbose>true</verbose>
+          <images>
+            <image>
+              <alias>voting-app</alias>
+              <name>citrus/voting-app:${project.version}</name>
+              <build>
+                <from>fabric8/tomcat-8:latest</from>
+                <tags>
+                  <tag>latest</tag>
+                </tags>
+                <assembly>
+                  <inline>
+                    <files>
+                      <file>
+                        <source>${settings.localRepository}/com/consol/citrus/demo/voting-demo/${project.version}/voting-demo-${project.version}.war</source>
+                        <destName>ROOT.war</destName>
+                        <outputDirectory>.</outputDirectory>
+                      </file>
+                    </files>
+                  </inline>
+                </assembly>
+              </build>
+              <run>
+                <namingStrategy>alias</namingStrategy>
+                <env>
+                  <CATALINA_OPTS>-Xmx64m</CATALINA_OPTS>
+                </env>
+                <ports>
+                  <port>8080:8080</port>
+                </ports>
+                <wait>
+                  <http>
+                    <url>http://localhost:8080/voting</url>
+                    <method>GET</method>
+                    <status>200</status>
+                  </http>
+                  <time>60000</time>
+                  <shutdown>500</shutdown>
+                </wait>
+                <log>
+                  <enabled>true</enabled>
+                  <color>green</color>
+                </log>
+              </run>
+            </image>
+            <image>
+              <alias>voting-app-tests</alias>
+              <name>citrus/voting-app-tests:${project.version}</name>
+              <build>
+                <from>consol/citrus:2.7</from>
+                <tags>
+                  <tag>latest</tag>
+                </tags>
+                <assembly>
+                  <descriptorRef>project</descriptorRef>
+                </assembly>
+              </build>
+              <run>
+                <namingStrategy>alias</namingStrategy>
+                <volumes>
+                  <bind>
+                    <volume>/var/run/docker.sock:/var/run/dockerhost/docker.sock</volume>
+                  </bind>
+                </volumes>
+                <links>
+                  <link>voting-app</link>
+                </links>
+                <dependsOn>
+                  <dependsOn>voting-app</dependsOn>
+                </dependsOn>
+                <wait>
+                  <log>BUILD SUCCESS</log>
+                  <time>60000</time>
+                  <shutdown>500</shutdown>
+                </wait>
+                <log>
+                  <enabled>true</enabled>
+                  <color>green</color>
+                </log>
+              </run>
+            </image>
+          </images>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -142,6 +217,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -198,9 +278,9 @@
 
     <!-- Test scoped dependencies -->
     <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>${testng.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
     </dependency>
 
     <!-- Citrus -->
@@ -236,6 +316,18 @@
     </dependency>
     <dependency>
       <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-docker</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-selenium</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
       <artifactId>citrus-cucumber</artifactId>
       <version>${citrus.version}</version>
       <scope>test</scope>
@@ -263,6 +355,39 @@
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>docker</id>
+      <properties>
+        <test>skip</test>
+        <it.test>skip</it.test>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>build</goal>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
     <profile>
       <id>embedded</id>
       <activation>

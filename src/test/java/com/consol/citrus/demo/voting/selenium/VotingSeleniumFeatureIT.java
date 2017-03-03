@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.predefined;
+package com.consol.citrus.demo.voting.selenium;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -27,5 +27,5 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         glue = { "com.consol.citrus.cucumber.step.runner" },
         plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
-public class VotingPredefinedFeatureIT {
+public class VotingSeleniumFeatureIT {
 }

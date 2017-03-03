@@ -19,12 +19,12 @@
         <a href="/voting" class="list-group-item">No voting found</a>
         {{/votings}}
         {{#votings}}
-        <a href="/voting/{{id}}" class="list-group-item">{{title}} {{#closed}}<span class="badge">closed</span>{{/closed}}</a>
+        <a href="/voting/{{id}}" class="list-group-item">{{title}}{{#closed}}&nbsp;<span class="badge">closed</span>{{/closed}}</a>
         {{/votings}}
       </div>
 
       <h2>New voting</h2>
-      <form method="POST">
+      <form id="new-voting" method="POST">
         <div class="form-group">
           <label for="title">Title</label>
           <input type="text" name="title" id="title" class="form-control" placeholder="Title of the voting"/>
@@ -34,7 +34,7 @@
           <textarea name="options" id="options" class="form-control" placeholder="List of options - each option in separate line" rows="5">yes
 no</textarea>
         </div>
-        <button type="submit" class="btn btn-default">Add</button>
+        <button id="submitNew" type="submit" class="btn btn-default">Add</button>
       </form>
 
     </div>
