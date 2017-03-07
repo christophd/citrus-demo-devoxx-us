@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.containsString;
 /**
  * @author Christoph Deppisch
  */
-public class VotingIntegrationSteps {
+public class VotingRestApiSteps {
 
     @CitrusEndpoint
     private HttpClient votingClient;
@@ -49,6 +49,17 @@ public class VotingIntegrationSteps {
 
     @CitrusResource
     private TestRunner runner;
+
+    @Given("^Voting list is empty$")
+    public void clear() {
+        runner.http(action -> action.client(votingClient)
+                .send()
+                .delete("/voting"));
+
+        runner.http(action -> action.client(votingClient)
+                .receive()
+                .response(HttpStatus.OK));
+    }
 
     @Given("^New voting \"([^\"]*)\"$")
     public void newVoting(String title) {
@@ -71,13 +82,13 @@ public class VotingIntegrationSteps {
 
     @When("^(?:I|client) creates? the voting$")
     public void createVoting() {
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .send()
             .post("/voting")
             .contentType("application/json")
             .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${options}, \"report\": ${report} }"));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .receive()
             .response(HttpStatus.OK)
             .messageType(MessageType.JSON));
@@ -85,11 +96,11 @@ public class VotingIntegrationSteps {
 
     @When("^(?:I|client) votes? for \"([^\"]*)\"$")
     public void voteFor(String option) {
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .send()
                 .put("voting/${id}/" + option));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .receive()
                 .response(HttpStatus.OK));
     }
@@ -105,11 +116,11 @@ public class VotingIntegrationSteps {
     public void closeVoting() {
         runner.createVariable("closed", "true");
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .send()
             .put("/voting/${id}/close"));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .receive()
             .response(HttpStatus.OK));
 
@@ -123,12 +134,12 @@ public class VotingIntegrationSteps {
 
     @Then("^(?:I|client) should be able to get the voting$")
     public void shouldGetVoting() {
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .send()
                 .get("/voting/${id}")
                 .accept("application/json"));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .receive()
                 .response(HttpStatus.OK)
                 .messageType(MessageType.JSON)
@@ -139,7 +150,7 @@ public class VotingIntegrationSteps {
     public void shouldReceiveReport(DataTable dataTable) {
         runner.createVariable("results", buildOptionsAsJsonArray(dataTable));
 
-        runner.receive(builder -> builder.endpoint(reportingEndpoint)
+        runner.receive(action -> action.endpoint(reportingEndpoint)
                 .messageType(MessageType.JSON)
                 .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${results}, \"closed\": ${closed}, \"report\": ${report} }"));
     }
@@ -148,7 +159,7 @@ public class VotingIntegrationSteps {
     public void shouldReceiveReportingMail(String text) {
         runner.createVariable("mailBody", text);
 
-        runner.receive(builder -> builder.endpoint(mailServer)
+        runner.receive(action -> action.endpoint(mailServer)
                 .payload(new ClassPathResource("templates/mail.xml"))
                 .header(CitrusMailMessageHeaders.MAIL_SUBJECT, "Voting results")
                 .header(CitrusMailMessageHeaders.MAIL_FROM, "voting@example.org")
@@ -157,12 +168,12 @@ public class VotingIntegrationSteps {
 
     @Then("^(?:the )?list of votings should contain \"([^\"]*)\"$")
     public void listOfVotingsShouldContain(String title) {
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .send()
             .get("/voting")
             .accept("application/json"));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
             .receive()
             .response(HttpStatus.OK)
             .messageType(MessageType.JSON)
@@ -177,12 +188,12 @@ public class VotingIntegrationSteps {
 
     @Then("^(?:the )?top vote should be \"([^\"]*)\"$")
     public void topVoteShouldBe(String option) {
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .send()
                 .get("/voting/${id}/top")
                 .accept("application/json"));
 
-        runner.http(builder -> builder.client(votingClient)
+        runner.http(action -> action.client(votingClient)
                 .receive()
                 .response(HttpStatus.OK)
                 .messageType(MessageType.JSON)

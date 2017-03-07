@@ -1,5 +1,10 @@
 Feature: Voting user interface
 
+  Background:
+    Given URL: http://localhost:8080/rest/services
+    Given send DELETE /voting
+    And receive status 200 OK
+
   Scenario: Welcome page
     When user starts browser
     And user navigates to "http://localhost:8080"

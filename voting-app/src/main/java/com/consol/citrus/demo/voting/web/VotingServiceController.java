@@ -49,6 +49,13 @@ public class VotingServiceController {
         return voting;
     }
 
+    @RequestMapping(method = RequestMethod.DELETE)
+    @ResponseBody
+    public ResponseEntity clear() {
+        votingService.clear();
+        return ResponseEntity.ok().build();
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Voting getVoting(@PathVariable("id") String votingId) {

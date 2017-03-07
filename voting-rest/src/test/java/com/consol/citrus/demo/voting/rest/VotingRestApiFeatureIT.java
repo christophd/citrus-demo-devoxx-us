@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.predefined;
+package com.consol.citrus.demo.voting.rest;
 
 import cucumber.api.CucumberOptions;
 import cucumber.api.junit.Cucumber;
@@ -25,7 +25,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        glue = { "com.consol.citrus.cucumber.step.runner.core" },
+        glue = { "com.consol.citrus.demo.voting.rest",
+                 "com.consol.citrus.cucumber.step.runner.core",
+                 "com.consol.citrus.cucumber.step.runner.http" },
         plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
-public class VotingPredefinedFeatureIT {
+public class VotingRestApiFeatureIT {
 }

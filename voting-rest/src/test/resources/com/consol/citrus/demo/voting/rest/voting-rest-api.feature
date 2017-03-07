@@ -1,47 +1,61 @@
 Feature: Voting Http REST API
 
   Background:
-    Given New voting "Do you like cucumbers?"
-    And voting options are "yes:no"
+    Given URL: http://localhost:8080/rest/services
+    Given variables
+      | id      | citrus:randomUUID()  |
+      | title   | Do you like Mondays? |
+      | options | [ { "name": "yes", "votes": 0 }, { "name": "no", "votes": 0 } ] |
+      | report  | true                 |
 
   Scenario: Create voting
-    When client creates the voting
-    Then client should be able to get the voting
-    And the list of votings should contain "Do you like cucumbers?"
+    Given Request:
+    """
+    {
+      "id": "${id}",
+      "title": "${title}",
+      "options": ${options},
+      "report": ${report}
+    }
+    """
+    And Content-Type: application/json
+    When send POST /voting
+    Then receive status 200 OK
 
-  Scenario: Add votes
-    When client creates the voting
-    And client votes for "yes"
-    Then votes should be
-      | yes | 1 |
-      | no  | 0 |
+  Scenario: Get empty voting list
+    Given send DELETE /voting
+    And receive status 200 OK
+    Given Accept: application/json
+    When send GET /voting
+    Then Response: []
+    And receive status 200 OK
 
-  Scenario: Top vote
-    When client creates the voting
-    And client votes for "no"
-    Then votes should be
-      | yes | 0 |
-      | no  | 1 |
-    And top vote should be "no"
-
-  Scenario: Close voting
-    Given reporting is enabled
-    When client creates the voting
-    And client should be able to get the voting
-    And client votes for "yes" 3 times
-    And client votes for "no" 1 times
-    And client closes the voting
-    Then reporting should receive vote results
-      | yes | 3 |
-      | no  | 1 |
-    And participants should receive reporting mail
-"""
-Dear participants,
-
-the voting '${title}' came to an end.
-
-The top answer is 'yes'!
-
-Have a nice day!
-Your Voting-App Team
-"""
+  Scenario: Get voting list
+    Given send DELETE /voting
+    And receive status 200 OK
+    Given Request:
+    """
+    {
+      "id": "${id}",
+      "title": "${title}",
+      "options": ${options},
+      "report": ${report}
+    }
+    """
+    And Content-Type: application/json
+    When send POST /voting
+    Then receive status 200 OK
+    When send GET /voting
+    Then Response:
+    """
+    [
+      {
+        "id": "${id}",
+        "title": "${title}",
+        "options": ${options},
+        "report": ${report},
+        "closed": false
+      }
+    ]
+    """
+    And receive status 200 OK

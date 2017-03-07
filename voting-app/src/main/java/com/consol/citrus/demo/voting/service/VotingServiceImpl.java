@@ -103,6 +103,11 @@ public class VotingServiceImpl implements VotingService {
         }
     }
 
+    @Override
+    public void clear() {
+        votings.clear();
+    }
+
     /**
      * Checks that voting id is known to the system.
      * @param votingId

@@ -39,4 +39,6 @@ public interface VotingService {
     VoteOption getTopVote(Voting voting);
 
     void close(Voting voting);
+
+    void clear();
 }

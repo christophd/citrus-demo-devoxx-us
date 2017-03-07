@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.predefined;
+package com.consol.citrus.demo.voting.rest;
 
 import com.consol.citrus.cucumber.message.MessageCreator;
 import com.consol.citrus.http.message.HttpMessage;
