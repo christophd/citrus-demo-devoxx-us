@@ -18,7 +18,6 @@ package com.consol.citrus.demo.voting.rest;
 
 import com.consol.citrus.cucumber.message.MessageCreator;
 import com.consol.citrus.http.message.HttpMessage;
-import com.consol.citrus.jms.message.JmsMessage;
 import com.consol.citrus.mail.model.*;
 import com.consol.citrus.message.DefaultMessage;
 import com.consol.citrus.message.Message;
@@ -51,19 +50,6 @@ public class VotingMessageCreator {
                 .path("/voting/${id}/close")
                 .method(HttpMethod.PUT)
                 .contentType("application/json");
-    }
-
-    @MessageCreator("reportMessage")
-    public Message reportJmsMessage() {
-        return new JmsMessage("{ " +
-                "\"id\": \"${id}\", " +
-                "\"title\": \"${title}\", " +
-                "\"options\": [ " +
-                    "{ \"name\": \"yes\", \"votes\": 0 }," +
-                    "{ \"name\": \"no\", \"votes\": 0 }" +
-                "], " +
-                "\"closed\": true, " +
-                "\"report\": true }");
     }
 
     @MessageCreator("mailReport")

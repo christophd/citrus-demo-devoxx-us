@@ -18,9 +18,13 @@ package com.consol.citrus.demo.voting;
 
 import com.consol.citrus.dsl.endpoint.CitrusEndpoints;
 import com.consol.citrus.http.client.HttpClient;
+import com.consol.citrus.jms.endpoint.JmsEndpoint;
 import com.consol.citrus.mail.server.MailServer;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.jms.ConnectionFactory;
 
 /**
  * @author Christoph Deppisch
@@ -34,6 +38,40 @@ public class CitrusEndpointConfig {
                 .client()
                 .requestUrl("http://localhost:8080/rest/services")
                 .build();
+    }
+
+    @Bean
+    public JmsEndpoint createVotingEndpoint() {
+        return CitrusEndpoints.jms()
+                .asynchronous()
+                .connectionFactory(connectionFactory())
+                .destination("jms.voting.create")
+                .build();
+    }
+
+    @Bean
+    public JmsEndpoint voteEndpoint() {
+        return CitrusEndpoints.jms()
+                .asynchronous()
+                .connectionFactory(connectionFactory())
+                .destination("jms.voting.inbound")
+                .build();
+    }
+
+    @Bean
+    public JmsEndpoint reportingEndpoint() {
+        return CitrusEndpoints.jms()
+                .asynchronous()
+                .connectionFactory(connectionFactory())
+                .destination("jms.voting.report")
+                .build();
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+        activeMQConnectionFactory.setBrokerURL("tcp://localhost:61616");
+        return activeMQConnectionFactory;
     }
 
     @Bean

@@ -8,6 +8,16 @@ Feature: Voting Http REST API
       | options | [ { "name": "yes", "votes": 0 }, { "name": "no", "votes": 0 } ] |
       | report  | true                 |
 
+  Scenario: Clear voting list
+    When send DELETE /voting
+    Then receive status 200 OK
+
+  Scenario: Get empty voting list
+    Given Accept: application/json
+    When send GET /voting
+    Then Response: []
+    And receive status 200 OK
+
   Scenario: Create voting
     Given Request:
     """
@@ -22,40 +32,9 @@ Feature: Voting Http REST API
     When send POST /voting
     Then receive status 200 OK
 
-  Scenario: Get empty voting list
-    Given send DELETE /voting
-    And receive status 200 OK
-    Given Accept: application/json
-    When send GET /voting
-    Then Response: []
-    And receive status 200 OK
-
   Scenario: Get voting list
-    Given send DELETE /voting
-    And receive status 200 OK
-    Given Request:
-    """
-    {
-      "id": "${id}",
-      "title": "${title}",
-      "options": ${options},
-      "report": ${report}
-    }
-    """
-    And Content-Type: application/json
-    When send POST /voting
-    Then receive status 200 OK
     When send GET /voting
-    Then Response:
-    """
-    [
-      {
-        "id": "${id}",
-        "title": "${title}",
-        "options": ${options},
-        "report": ${report},
-        "closed": false
-      }
-    ]
-    """
+    Then validate $.size() is 1
+    Then validate $..title is Do you like Mondays?
+    Then validate $..report is true
     And receive status 200 OK

@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.service;
+package com.consol.citrus.demo.voting.rest;
 
-import com.consol.citrus.demo.voting.model.*;
-
-import java.util.List;
+import cucumber.api.CucumberOptions;
+import cucumber.api.junit.Cucumber;
+import org.junit.runner.RunWith;
 
 /**
  * @author Christoph Deppisch
  */
-public interface VotingService {
-
-    List<Voting> getVotings();
-
-    void add(Voting voting);
-
-    void vote(Vote vote);
-
-    Voting get(String votingId);
-
-    void remove(String votingId);
-
-    VoteOption getTopVote(Voting voting);
-
-    void close(Voting voting);
-
-    void clear();
+@RunWith(Cucumber.class)
+@CucumberOptions(
+        glue = { "com.consol.citrus.demo.voting.rest",
+                 "com.consol.citrus.cucumber.step.runner.core",
+                 "com.consol.citrus.cucumber.step.runner.http" },
+        plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
+public class VotingRestFeatureIT {
 }

@@ -16,8 +16,7 @@
 
 package com.consol.citrus.demo.voting.web;
 
-import com.consol.citrus.demo.voting.model.VoteOption;
-import com.consol.citrus.demo.voting.model.Voting;
+import com.consol.citrus.demo.voting.model.*;
 import com.consol.citrus.demo.voting.service.VotingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +63,7 @@ public class VotingServiceController {
 
     @RequestMapping(value = "/{id}/{option}", method = RequestMethod.PUT)
     public ResponseEntity vote(@PathVariable("id") String votingId, @PathVariable("option") String option) {
-        votingService.vote(votingId, option);
+        votingService.vote(new Vote(votingId, option));
         return ResponseEntity.ok().build();
     }
 

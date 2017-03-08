@@ -16,12 +16,19 @@
 
 package com.consol.citrus.demo.voting.service;
 
+import com.consol.citrus.demo.voting.model.VoteOption;
+import com.consol.citrus.demo.voting.model.Voting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
 import javax.mail.*;
-import javax.mail.internet.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Properties;
 
@@ -29,7 +36,7 @@ import java.util.Properties;
  * @author Christoph Deppisch
  */
 @Service
-public class MailServiceImpl implements MailService {
+public class MailServiceImpl implements MailService, ReportingService {
 
     /** Logger */
     private static Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
@@ -74,6 +81,19 @@ public class MailServiceImpl implements MailService {
             Transport.send(message);
         } catch (MessagingException e) {
             log.error("Failed to send mail!", e);
+        }
+    }
+
+    @Override
+    public void report(Voting voting, VoteOption topVote) {
+        log.info("Create reporting for voting: " + voting.getId());
+
+        try {
+            sendMail("participants@example.org", "Voting results",
+                    String.format(FileCopyUtils.copyToString(new InputStreamReader(
+                            new ClassPathResource("templates/reporting-mail.txt").getInputStream())), voting.getTitle(), topVote.getName()));
+        } catch (IOException e) {
+            log.error("Failed to send mail reporting", e);
         }
     }
 }

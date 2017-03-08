@@ -17,9 +17,10 @@
 package com.consol.citrus.demo.voting.jms;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.*;
 
@@ -30,7 +31,22 @@ import javax.jms.ConnectionFactory;
  */
 @Configuration
 @EnableJms
+@Conditional(JmsEnabledCondition.class)
 public class JmsConfig {
+
+    @Bean
+    public ConnectionFactory activeMqConnectionFactory() {
+        return new ActiveMQConnectionFactory("tcp://localhost:61616");
+    }
+
+    @Bean
+    public JmsListenerContainerFactory<?> jmsListenerContainerFactory(ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jacksonJmsMessageConverter());
+        factory.setPubSubDomain(false);
+        return factory;
+    }
 
     @Bean
     public JmsTemplate jmsTemplate() {
@@ -38,11 +54,6 @@ public class JmsConfig {
         jmsTemplate.setConnectionFactory(activeMqConnectionFactory());
         jmsTemplate.setMessageConverter(jacksonJmsMessageConverter());
         return jmsTemplate;
-    }
-
-    @Bean
-    public ConnectionFactory activeMqConnectionFactory() {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
     }
 
     @Bean

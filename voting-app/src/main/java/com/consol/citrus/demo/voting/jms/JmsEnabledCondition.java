@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.rest;
+package com.consol.citrus.demo.voting.jms;
 
-import cucumber.api.CucumberOptions;
-import cucumber.api.junit.Cucumber;
-import org.junit.runner.RunWith;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
  * @author Christoph Deppisch
  */
-@RunWith(Cucumber.class)
-@CucumberOptions(
-        glue = { "com.consol.citrus.demo.voting.rest",
-                 "com.consol.citrus.cucumber.step.runner.core",
-                 "com.consol.citrus.cucumber.step.runner.http" },
-        plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
-public class VotingRestApiFeatureIT {
+public class JmsEnabledCondition implements Condition {
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        return Boolean.valueOf(System.getProperty("voting.jms.enabled", "false"));
+    }
 }

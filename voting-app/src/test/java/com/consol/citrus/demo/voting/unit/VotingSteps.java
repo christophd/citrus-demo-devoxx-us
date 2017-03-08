@@ -16,8 +16,7 @@
 
 package com.consol.citrus.demo.voting.unit;
 
-import com.consol.citrus.demo.voting.model.VoteOption;
-import com.consol.citrus.demo.voting.model.Voting;
+import com.consol.citrus.demo.voting.model.*;
 import com.consol.citrus.demo.voting.service.VotingService;
 import com.consol.citrus.demo.voting.service.VotingServiceImpl;
 import cucumber.api.java.After;
@@ -73,7 +72,7 @@ public class VotingSteps {
     @When("^(?:I|user) votes? for \"([^\"]*)\"$")
     public void voteFor(String option) {
         try {
-            votingService.vote(votingId.toString(), option);
+            votingService.vote(new Vote(votingId.toString(), option));
         } catch (Exception e) {
             exceptions.push(e);
         }

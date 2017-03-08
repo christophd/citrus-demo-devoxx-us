@@ -2,13 +2,13 @@ Feature: Voting Http REST API
 
   Background:
     Given Voting list is empty
-    And New voting "Do you like cucumbers?"
+    And New voting "Do you like donuts?"
     And voting options are "yes:no"
 
   Scenario: Create voting
     When client creates the voting
     Then client should be able to get the voting
-    And the list of votings should contain "Do you like cucumbers?"
+    And the list of votings should contain "Do you like donuts?"
 
   Scenario: Add votes
     When client creates the voting
@@ -28,14 +28,10 @@ Feature: Voting Http REST API
   Scenario: Close voting
     Given reporting is enabled
     When client creates the voting
-    And client should be able to get the voting
     And client votes for "yes" 3 times
     And client votes for "no" 1 times
     And client closes the voting
-    Then reporting should receive vote results
-      | yes | 3 |
-      | no  | 1 |
-    And participants should receive reporting mail
+    Then participants should receive reporting mail
 """
 Dear participants,
 

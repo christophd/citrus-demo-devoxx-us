@@ -24,6 +24,7 @@
   <modules>
     <module>voting-app</module>
     <module>voting-docker</module>
+    <module>voting-jms</module>
     <module>voting-rest</module>
     <module>voting-selenium</module>
   </modules>

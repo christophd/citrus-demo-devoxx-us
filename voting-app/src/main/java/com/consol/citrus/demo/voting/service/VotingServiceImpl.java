@@ -16,8 +16,7 @@
 
 package com.consol.citrus.demo.voting.service;
 
-import com.consol.citrus.demo.voting.model.VoteOption;
-import com.consol.citrus.demo.voting.model.Voting;
+import com.consol.citrus.demo.voting.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,7 @@ public class VotingServiceImpl implements VotingService {
     private Map<String, Voting> votings = new HashMap<>();
 
     @Autowired
-    private ReportingService reportingService;
+    private List<ReportingService> reportingServices;
 
     @Override
     public List<Voting> getVotings() {
@@ -51,16 +50,16 @@ public class VotingServiceImpl implements VotingService {
     }
 
     @Override
-    public void vote(String votingId, String option) {
-        checkVoting(votingId);
+    public void vote(Vote vote) {
+        checkVoting(vote.getVotingId());
 
-        Voting voting = votings.get(votingId);
+        Voting voting = votings.get(vote.getVotingId());
         if (voting.isClosed()) {
             throw new RuntimeException("Failed to add vote - voting is closed!");
         }
 
         for (VoteOption voteOption : voting.getOptions()) {
-            if (voteOption.getName().equals(option)) {
+            if (voteOption.getName().equals(vote.getOption())) {
                 voteOption.increment();
             }
         }
@@ -99,7 +98,9 @@ public class VotingServiceImpl implements VotingService {
         log.info("Close voting: " + voting.getId());
 
         if (voting.isReport()) {
-            reportingService.report(voting, getTopVote(voting));
+            for (ReportingService reportingService : reportingServices) {
+                reportingService.report(voting, getTopVote(voting));
+            }
         }
     }
 

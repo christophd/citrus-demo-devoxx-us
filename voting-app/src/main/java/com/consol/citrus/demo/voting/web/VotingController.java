@@ -16,6 +16,7 @@
 
 package com.consol.citrus.demo.voting.web;
 
+import com.consol.citrus.demo.voting.model.Vote;
 import com.consol.citrus.demo.voting.model.Voting;
 import com.consol.citrus.demo.voting.service.VotingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class VotingController {
 
     @RequestMapping(value = "/{id}/vote", method = RequestMethod.GET)
     public String vote(@PathVariable("id") String votingId, @RequestParam("option") String option, Model model) {
-        votingService.vote(votingId, option);
+        votingService.vote(new Vote(votingId, option));
         return getVoting(votingId, model);
     }
 

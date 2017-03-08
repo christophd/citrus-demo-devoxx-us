@@ -15,6 +15,7 @@ Feature: Show voting results
     When I vote for "yes"
     Then votes of option "yes" should be 1
     And votes of option "no" should be 0
+    And top vote should be "yes"
 
   Scenario: Get top vote result
     When I vote for "yes" 3 times

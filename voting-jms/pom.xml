@@ -8,8 +8,8 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>voting-rest</artifactId>
-  <name>voting-rest</name>
+  <artifactId>voting-jms</artifactId>
+  <name>voting-jms</name>
 
   <dependencies>
     <!-- Logging -->
@@ -30,6 +30,12 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-broker</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    
     <!-- Test scoped dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -54,6 +60,12 @@
     <dependency>
       <groupId>com.consol.citrus</groupId>
       <artifactId>citrus-http</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-jms</artifactId>
       <version>${citrus.version}</version>
       <scope>test</scope>
     </dependency>
@@ -102,6 +114,30 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.activemq.tooling</groupId>
+            <artifactId>activemq-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>start-activemq</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <fork>true</fork>
+                </configuration>
+              </execution>
+              <execution>
+                <id>stop-activemq</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-maven-plugin</artifactId>
             <executions>
@@ -113,6 +149,16 @@
                 </goals>
                 <configuration>
                   <daemon>true</daemon>
+                  <systemProperties>
+                    <systemProperty>
+                      <name>voting.jms.enabled</name>
+                      <value>true</value>
+                    </systemProperty>
+                    <systemProperty>
+                      <name>spring.profiles.active</name>
+                      <value>jms</value>
+                    </systemProperty>
+                  </systemProperties>
                 </configuration>
               </execution>
               <execution>

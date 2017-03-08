@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.demo.voting.rest;
+package com.consol.citrus.demo.voting.jms;
 
 import com.consol.citrus.annotations.CitrusEndpoint;
 import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.dsl.runner.TestRunner;
 import com.consol.citrus.http.client.HttpClient;
 import com.consol.citrus.jms.endpoint.JmsEndpoint;
-import com.consol.citrus.mail.message.CitrusMailMessageHeaders;
-import com.consol.citrus.mail.server.MailServer;
 import com.consol.citrus.message.MessageType;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.*;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
-import static org.hamcrest.Matchers.containsString;
-
 /**
  * @author Christoph Deppisch
  */
-public class VotingRestApiSteps {
+public class VotingJmsSteps {
 
     @CitrusEndpoint
     private HttpClient votingClient;
 
-    @CitrusEndpoint
-    private MailServer mailServer;
+    @CitrusEndpoint(name = "createVotingEndpoint")
+    private JmsEndpoint createVotingEndpoint;
 
-    @CitrusEndpoint
+    @CitrusEndpoint(name = "voteEndpoint")
+    private JmsEndpoint voteEndpoint;
+
+    @CitrusEndpoint(name = "reportingEndpoint")
     private JmsEndpoint reportingEndpoint;
 
     @CitrusResource
@@ -82,27 +80,16 @@ public class VotingRestApiSteps {
 
     @When("^(?:I|client) creates? the voting$")
     public void createVoting() {
-        runner.http(action -> action.client(votingClient)
-            .send()
-            .post("/voting")
-            .contentType("application/json")
+        runner.send(action -> action.endpoint(createVotingEndpoint)
+            .header("_type", "com.consol.citrus.demo.voting.model.Voting")
             .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${options}, \"report\": ${report} }"));
-
-        runner.http(action -> action.client(votingClient)
-            .receive()
-            .response(HttpStatus.OK)
-            .messageType(MessageType.JSON));
     }
 
     @When("^(?:I|client) votes? for \"([^\"]*)\"$")
     public void voteFor(String option) {
-        runner.http(action -> action.client(votingClient)
-                .send()
-                .put("voting/${id}/" + option));
-
-        runner.http(action -> action.client(votingClient)
-                .receive()
-                .response(HttpStatus.OK));
+        runner.send(action -> action.endpoint(voteEndpoint)
+                .header("_type", "com.consol.citrus.demo.voting.model.Vote")
+                .payload(String.format("{ \"votingId\": \"${id}\", \"option\": \"%s\" }", option)));
     }
 
     @When("^(?:I|client) votes? for \"([^\"]*)\" (\\d+) times$")
@@ -126,26 +113,6 @@ public class VotingRestApiSteps {
 
     }
 
-    @Then("^(?:I|client) should be able to get the voting \"([^\"]*)\"$")
-    public void shouldGetById(String title) {
-        runner.createVariable("title", title);
-        shouldGetVoting();
-    }
-
-    @Then("^(?:I|client) should be able to get the voting$")
-    public void shouldGetVoting() {
-        runner.http(action -> action.client(votingClient)
-                .send()
-                .get("/voting/${id}")
-                .accept("application/json"));
-
-        runner.http(action -> action.client(votingClient)
-                .receive()
-                .response(HttpStatus.OK)
-                .messageType(MessageType.JSON)
-                .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${options}, \"closed\": ${closed}, \"report\": ${report} }"));
-    }
-
     @Then("^(?:the )?reporting should receive vote results$")
     public void shouldReceiveReport(DataTable dataTable) {
         runner.createVariable("results", buildOptionsAsJsonArray(dataTable));
@@ -153,37 +120,6 @@ public class VotingRestApiSteps {
         runner.receive(action -> action.endpoint(reportingEndpoint)
                 .messageType(MessageType.JSON)
                 .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${results}, \"closed\": ${closed}, \"report\": ${report} }"));
-    }
-
-    @Then("^(?:the )?participants should receive reporting mail$")
-    public void shouldReceiveReportingMail(String text) {
-        runner.createVariable("mailBody", text);
-
-        runner.receive(action -> action.endpoint(mailServer)
-                .payload(new ClassPathResource("templates/mail.xml"))
-                .header(CitrusMailMessageHeaders.MAIL_SUBJECT, "Voting results")
-                .header(CitrusMailMessageHeaders.MAIL_FROM, "voting@example.org")
-                .header(CitrusMailMessageHeaders.MAIL_TO, "participants@example.org"));
-    }
-
-    @Then("^(?:the )?list of votings should contain \"([^\"]*)\"$")
-    public void listOfVotingsShouldContain(String title) {
-        runner.http(action -> action.client(votingClient)
-            .send()
-            .get("/voting")
-            .accept("application/json"));
-
-        runner.http(action -> action.client(votingClient)
-            .receive()
-            .response(HttpStatus.OK)
-            .messageType(MessageType.JSON)
-            .validate("$..title.toString()", containsString(title)));
-    }
-
-    @Then("^(?:the )?votes should be$")
-    public void votesShouldBe(DataTable dataTable) {
-        runner.createVariable("options", buildOptionsAsJsonArray(dataTable));
-        shouldGetVoting();
     }
 
     @Then("^(?:the )?top vote should be \"([^\"]*)\"$")
