@@ -14,13 +14,41 @@ Feature: Voting user interface
     When user navigates to "http://localhost:8080"
     And user clicks link with link-text="Run application"
     And sleep 500 ms
-    Then page should display heading with tag-name="h1"
-    And page should display link with link-text="No voting found"
-    And page should display form with id="new-voting"
+    Then page should display heading with tag-name="h1" having
+    | text | Voting list |
 
-  Scenario: Add todo entry
-    When user navigates to "http://localhost:8080/voting"
-    And user sets text "Visit DevoxxUS" to input with id="title"
+    And page should display link with link-text="No voting found"
+    And page should display form with id="new-voting" having
+    | tag-name  | form          |
+    | attribute | method="post" |
+
+  Scenario: Add voting
+    Given user navigates to "http://localhost:8080/voting"
+    When user sets text "Do you like burgers?" to input with id="title"
     And user clicks button with id="submitNew"
     And sleep 500 ms
-    Then page should display element with link-text="Visit DevoxxUS"
+    Then page should display element with link-text="Do you like burgers?"
+
+  Scenario: Show voting details
+    Given user navigates to "http://localhost:8080/voting"
+    And user sets text "Do you like steaks?" to input with id="title"
+    And user clicks button with id="submitNew"
+    And sleep 500 ms
+    When user clicks link with link-text="Do you like steaks?"
+    Then page should display element with tag-name="h2" having
+    | text | Do you like steaks? |
+    And page should display link with link-text="yes"
+    And page should display link with link-text="no"
+    And page should display link with link-text="Close voting"
+
+  Scenario: Add votes
+    Given user navigates to "http://localhost:8080/voting"
+    And user sets text "Do you like cupcakes?" to input with id="title"
+    And user clicks button with id="submitNew"
+    And sleep 500 ms
+    When user clicks link with link-text="Do you like cupcakes?"
+    And user clicks link with link-text="yes"
+    Then page should display element with id="yes" having
+    | text | yes: 1 |
+    Then page should display element with id="no" having
+    | text | no: 0 |

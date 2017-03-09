@@ -19,6 +19,7 @@ package com.consol.citrus.demo.voting.unit;
 import com.consol.citrus.demo.voting.model.*;
 import com.consol.citrus.demo.voting.service.VotingService;
 import com.consol.citrus.demo.voting.service.VotingServiceImpl;
+import cucumber.api.DataTable;
 import cucumber.api.java.After;
 import cucumber.api.java.en.*;
 import org.junit.Assert;
@@ -88,6 +89,25 @@ public class VotingSteps {
     @When("^(?:the )?voting is closed$")
     public void votingIsClosed() {
         votingService.get(votingId.toString()).setClosed(true);
+    }
+
+    @Then("^(?:the )?votes should be$")
+    public void votesShouldBe(DataTable dataTable) {
+        Map<String, Integer> votes = dataTable.asMap(String.class, Integer.class);
+        for(Map.Entry<String, Integer> voteEntry : votes.entrySet()) {
+            votesOfOptionShouldBe(voteEntry.getKey(), voteEntry.getValue());
+        }
+    }
+
+    @Then("^(?:the )?voting should have options$")
+    public void votingShouldHaveOptions(DataTable dataTable) {
+        List<String> options = dataTable.asList(String.class);
+
+        votingShouldHaveOptions(options.size());
+
+        for(String option : options) {
+            votingShouldHaveOption(option);
+        }
     }
 
     @Then("^(?:the )?votes of option \"([^\"]*)\" should be (\\d+)$")

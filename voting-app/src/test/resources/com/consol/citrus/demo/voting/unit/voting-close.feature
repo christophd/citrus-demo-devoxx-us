@@ -1,6 +1,6 @@
 Feature: Close voting
 
-  User should be able to close voting. No further votes are accepted then.
+  As a user I want to close a voting in order to stop accepting votes.
 
   Scenario: Closed voting should not accept votes
     Given New default voting

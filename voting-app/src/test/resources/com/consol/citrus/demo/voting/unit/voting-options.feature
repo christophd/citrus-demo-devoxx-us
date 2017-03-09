@@ -6,15 +6,15 @@ Feature: Create voting
   Scenario: Default voting options
     When I create new voting
     Then voting title should be "Do you like testing?"
-    And voting should have options
-      | yes |
-      | no  |
+    Then voting should have 2 options
+    And voting should have option "yes"
+    And voting should have option "no"
 
   Scenario: Custom voting options
     When I create new voting "What is your favorite color?"
     And voting options are "green:red:blue"
     Then voting title should be "What is your favorite color?"
-    And voting should have options
-      | green |
-      | red   |
-      | blue  |
+    And voting should have 3 options
+    And voting should have option "green"
+    And voting should have option "red"
+    And voting should have option "blue"
