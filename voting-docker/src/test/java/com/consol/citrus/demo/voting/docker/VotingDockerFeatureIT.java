@@ -25,7 +25,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Cucumber.class)
 @CucumberOptions(
-        glue = { "com.consol.citrus.cucumber.step.runner" },
+        glue = { "com.consol.citrus.cucumber.step.runner.core",
+                 "com.consol.citrus.cucumber.step.runner.http",
+                 "com.consol.citrus.cucumber.step.runner.docker" },
         plugin = { "com.consol.citrus.cucumber.CitrusReporter" } )
 public class VotingDockerFeatureIT {
 }

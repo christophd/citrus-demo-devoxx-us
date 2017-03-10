@@ -17,6 +17,7 @@
 package com.consol.citrus.demo.voting.jms;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
@@ -31,12 +32,18 @@ import javax.jms.ConnectionFactory;
  */
 @Configuration
 @EnableJms
-@Conditional(JmsEnabledCondition.class)
+@Profile("jms")
 public class JmsConfig {
+
+    @Value("${JMS_BROKER_HOST:localhost}")
+    private String host;
+
+    @Value("${JMS_BROKER_PORT:61616}")
+    private String port;
 
     @Bean
     public ConnectionFactory activeMqConnectionFactory() {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
+        return new ActiveMQConnectionFactory(String.format("tcp://%s:%s", host, port));
     }
 
     @Bean

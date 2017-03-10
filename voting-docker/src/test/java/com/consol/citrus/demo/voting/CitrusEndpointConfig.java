@@ -37,7 +37,7 @@ public class CitrusEndpointConfig {
     public HttpClient votingClient() {
         return CitrusEndpoints.http()
                 .client()
-                .requestUrl("http://voting-app:8080/rest/services")
+                .requestUrl("http://localhost:8080/rest/services")
                 .build();
     }
 
@@ -45,7 +45,6 @@ public class CitrusEndpointConfig {
     public DockerClient dockerClient() {
         return CitrusEndpoints.docker()
                 .client()
-                .url("unix:///var/run/dockerhost/docker.sock")
                 .build();
     }
 
@@ -71,7 +70,7 @@ public class CitrusEndpointConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-        activeMQConnectionFactory.setBrokerURL("tcp://message-broker:61616");
+        activeMQConnectionFactory.setBrokerURL("tcp://localhost:61616");
         return activeMQConnectionFactory;
     }
 }

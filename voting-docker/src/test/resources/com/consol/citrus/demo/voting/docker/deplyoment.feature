@@ -1,7 +1,6 @@
 Feature: Voting Docker infrastructure
 
-  Background:
-    Given docker client "dockerClient"
-
-  Scenario: Check container state
-    Then the docker container "voting-app" should be running
+  Scenario: Check container deployment state
+    Given docker-client "dockerClient"
+    Then container "voting-app" should be running
+    And container "message-broker" should be running

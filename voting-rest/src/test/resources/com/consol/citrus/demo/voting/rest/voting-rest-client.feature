@@ -29,7 +29,7 @@ Feature: Voting Http REST API
     Given reporting is enabled
     When client creates the voting
     And client votes for "yes" 3 times
-    And client votes for "no" 1 times
+    And client votes for "no" 2 times
     And client closes the voting
     Then participants should receive reporting mail
 """

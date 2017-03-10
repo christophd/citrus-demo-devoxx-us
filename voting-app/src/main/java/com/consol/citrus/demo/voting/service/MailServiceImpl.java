@@ -20,6 +20,7 @@ import com.consol.citrus.demo.voting.model.VoteOption;
 import com.consol.citrus.demo.voting.model.Voting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -41,8 +42,10 @@ public class MailServiceImpl implements MailService, ReportingService {
     /** Logger */
     private static Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
-    private String mailServerHost = "localhost";
-    private String mailServerPort = "2222";
+    @Value("${MAIL_SERVER_HOST:localhost}")
+    private String mailServerHost;
+    @Value("${MAIL_SERVER_PORT:2222}")
+    private String mailServerPort;
 
     private String from = "voting@example.org";
     private String username = "voting-user";

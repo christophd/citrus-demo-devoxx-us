@@ -151,10 +151,6 @@
                   <daemon>true</daemon>
                   <systemProperties>
                     <systemProperty>
-                      <name>voting.jms.enabled</name>
-                      <value>true</value>
-                    </systemProperty>
-                    <systemProperty>
                       <name>spring.profiles.active</name>
                       <value>jms</value>
                     </systemProperty>
