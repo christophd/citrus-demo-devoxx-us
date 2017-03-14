@@ -15,11 +15,11 @@ Feature: Voting Http REST API
   Scenario: Get empty voting list
     Given Accept: application/json
     When send GET /voting
-    Then Response: []
+    Then Payload: []
     And receive status 200 OK
 
   Scenario: Create voting
-    Given Request:
+    Given Payload:
     """
     {
       "id": "${id}",

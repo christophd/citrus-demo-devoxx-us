@@ -5,7 +5,7 @@ Feature: Create voting
 
   Scenario: Default voting options
     When I create new voting
-    Then voting title should be "Do you like testing?"
+    Then voting title should be "Do you like Mondays?"
     And voting should have options
       | yes |
       | no  |

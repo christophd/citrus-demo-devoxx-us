@@ -43,7 +43,7 @@ public class VotingSteps {
 
     @Given("^New default voting$")
     public void votingDefault() {
-        createVotingWithTitle("Do you like testing?");
+        createVotingWithTitle("Do you like Mondays?");
         votingOptions("yes:no");
     }
 
