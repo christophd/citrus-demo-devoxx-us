@@ -86,8 +86,7 @@ public class VotingRestSteps {
 
         runner.http(action -> action.client(votingClient)
             .receive()
-            .response(HttpStatus.OK)
-            .messageType(MessageType.JSON));
+            .response(HttpStatus.OK));
     }
 
     @When("^(?:I|client) votes? for \"([^\"]*)\"$")

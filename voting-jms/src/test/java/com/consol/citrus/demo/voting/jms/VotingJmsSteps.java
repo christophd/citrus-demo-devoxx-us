@@ -21,7 +21,6 @@ import com.consol.citrus.annotations.CitrusResource;
 import com.consol.citrus.dsl.runner.TestRunner;
 import com.consol.citrus.http.client.HttpClient;
 import com.consol.citrus.jms.endpoint.JmsEndpoint;
-import com.consol.citrus.message.MessageType;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.*;
 import org.springframework.http.HttpStatus;
@@ -118,7 +117,6 @@ public class VotingJmsSteps {
         runner.createVariable("results", buildOptionsAsJsonArray(dataTable));
 
         runner.receive(action -> action.endpoint(reportingEndpoint)
-                .messageType(MessageType.JSON)
                 .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${results}, \"closed\": ${closed}, \"report\": ${report} }"));
     }
 
@@ -132,7 +130,6 @@ public class VotingJmsSteps {
         runner.http(action -> action.client(votingClient)
                 .receive()
                 .response(HttpStatus.OK)
-                .messageType(MessageType.JSON)
                 .payload("{ \"name\": \"" + option + "\", \"votes\": \"@ignore@\" }"));
     }
 

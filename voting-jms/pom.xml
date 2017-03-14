@@ -11,6 +11,26 @@
   <artifactId>voting-jms</artifactId>
   <name>voting-jms</name>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <systemProperty>
+              <name>file.encoding</name>
+              <value>UTF-8</value>
+            </systemProperty>
+            <systemProperty>
+              <name>spring.profiles.active</name>
+              <value>jms</value>
+            </systemProperty>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <!-- Logging -->
     <dependency>
@@ -149,12 +169,6 @@
                 </goals>
                 <configuration>
                   <daemon>true</daemon>
-                  <systemProperties>
-                    <systemProperty>
-                      <name>spring.profiles.active</name>
-                      <value>jms</value>
-                    </systemProperty>
-                  </systemProperties>
                 </configuration>
               </execution>
               <execution>

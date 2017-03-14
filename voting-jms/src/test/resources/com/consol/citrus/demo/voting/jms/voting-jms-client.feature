@@ -1,6 +1,7 @@
 Feature: Voting Http JMS
 
   Scenario Outline: Receive reporting
+    Given Voting list is empty
     Given New voting "<question>"
     And voting options are "yes:no"
     And reporting is enabled
@@ -18,4 +19,4 @@ Feature: Voting Http JMS
     Examples:
       | question                    | yes_votes | no_votes | top_vote |
       | Do you like hotdogs?        | 12        | 5        | yes      |
-      | Do you like crap sandwich?  | 1         | 25       | no       |
+      | Do you like crab sandwich?  | 1         | 25       | no       |
