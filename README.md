@@ -1,35 +1,79 @@
 Demo for "Behavior driven integration with Cucumber and Citrus" ![Logo][1]
 ==============
 
-This demo application uses the combination of Citrus and Cucumber for behavior driven development (BDD). 
-The tests combine BDD feature stories with the famous Gherkin syntax and Citrus integration test capabilities. 
-Read about this feature in [reference guide][4].
+This demo application uses the combination of [Citrus][2] and [Cucumber][3] for behavior driven development (BDD). 
+The Cucumber tests use feature stories written in Gherkin syntax in combination with Citrus integration test capabilities.
  
-Devoxx US
+DevoxxUS 2017
 ---------
 
-This demo is used in Devoxx US 2017 tools in action session **Behavior driven integration with Cucumber and Citrus** as example
-project. The project demonstrates how to use Cucumber and Citrus for automated integration testing of message interfaces.
+This demo is used as an example project in DevoxxUS tools in action session [Behavior driven integration with Cucumber and Citrus][5]. 
+The project demonstrates how to use Cucumber and Citrus for automated integration testing of message interfaces.
 
 Objectives
 ---------
 
 The voting demo application is a simple Spring boot web application. The app provides a Http REST interface for clients and browsers. 
-The automated testing shows the usage of both Cucumber and Citrus in combination. Step definitions are able to use *CitrusResource*
-annotations for injecting a TestDesigner instance. The test designer is then used in steps to build a Citrus integration test.
+In addition to that clients can use a JMS inbound destination for adding ne voting entries.
+ 
+The automated testing shows the usage of both Cucumber and Citrus in combination. Step definitions are able to use *@CitrusResource* and *@CitrusEndpoint*
+annotations for injecting a Citrus components such as endpoints and test runner instances. The test runner Java fluent API is then used in Cucumber steps 
+to exchange messages via different message transports (Htp REST, JMS, Mail). We can still write normal step definition classes that use Gherkin annotations
+(*@Given*, *@When*, *@Then*) provided by Cucumber.
 
-At the end the Citrus test is automatically executed. We can use normal step definition classes that use Gherkin annotations
-(@Given, @When, @Then) provided by Cucumber.
+The Cucumber tests use JUnit as unit testing framework and are executable from Java IDE or command line with Maven. 
 
 Get started
 ---------
 
-We start with setting a special object factory in cucumber.properties
+We start with adding some dependencies for Cucumber and Citrus to the Maven project:
+
+    <!-- Citrus -->
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-core</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-java-dsl</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-http</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.consol.citrus</groupId>
+      <artifactId>citrus-cucumber</artifactId>
+      <version>${citrus.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Cucumber -->
+    <dependency>
+      <groupId>info.cukes</groupId>
+      <artifactId>cucumber-core</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>info.cukes</groupId>
+      <artifactId>cucumber-junit</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+After that we set a special Cucumber object factory in the *cucumber.properties*
 
     cucumber.api.java.ObjectFactory=cucumber.runtime.java.CitrusObjectFactory
     
-This object factory enables dependency injection for Citrus related resources as well as special test preparations. 
-No we can use a normal feature test using JUnit and Cucumber runner.
+This object factory provided by Citrus enables the extensions needed for Cucumber to work with Citrus. This is dependency injection for Citrus 
+related resources as well as special test preparations. No we can use a normal feature test using the Cucumber JUnit runner.
 
     @RunWith(Cucumber.class)
     @CucumberOptions(
@@ -37,18 +81,20 @@ No we can use a normal feature test using JUnit and Cucumber runner.
     public class VotingFeatureIT {
     }
 
-The test feature is described in a story using Gherkin syntax.
+The *@RunWith* annotation tells JUnit to run this test with Cucumber. Also we set an optional Citrus reporter that will print some Citrus test results to the console for us.
+The test feature file describes the user stories and scenarios using Gherkin syntax.
 
     Feature: Voting Http REST API
     
       Background:
-        Given New voting "Do you like cucumbers?"
+        Given Voting list is empty
+        And New voting "Do you like donuts?"
         And voting options are "yes:no"
     
       Scenario: Create voting
         When client creates the voting
         Then client should be able to get the voting
-        And the list of votings should contain "Do you like cucumbers?"
+        And the list of votings should contain "Do you like donuts?"
     
       Scenario: Add votes
         When client creates the voting
@@ -64,61 +110,83 @@ The test feature is described in a story using Gherkin syntax.
           | yes | 0 |
           | no  | 1 |
         And top vote should be "no"
+    
+      Scenario: Close voting
+        Given reporting is enabled
+        When client creates the voting
+        And client votes for "yes" 3 times
+        And client votes for "no" 2 times
+        And client closes the voting
+        Then participants should receive reporting mail
+    """
+    Dear participants,
+    
+    the voting '${title}' came to an end.
+    
+    The top answer is 'yes'!
+    
+    Have a nice day!
+    Your Voting-App Team
+    """
         
-The steps executed are defined in a separate class where a Citrus test designer is used to build integration test logic.
+The steps executed are defined in a separate class where a Citrus test runner is used to build integration test logic.
 The test steps call REST API operations as client and verify the response messages from the server. In addition to that Citrus
 provides backend service simulation for JMS and Mail SMTP.
 
-    public class VotingIntegrationSteps {
+    public class VotingRestSteps {
     
-        private final String votingClient = "votingClient";
-        private final String mailServer = "mailServer";
-        private final String reportingEndpoint = "reportingEndpoint";
+        @CitrusEndpoint
+        private HttpClient votingClient;
+    
+        @CitrusEndpoint
+        private MailServer mailServer;
     
         @CitrusResource
-        private TestDesigner designer;
+        private TestRunner runner;
+    
+        @Given("^Voting list is empty$")
+        public void clear() {
+            runner.http(action -> action.client(votingClient)
+                    .send()
+                    .delete("/voting"));
+    
+            runner.http(action -> action.client(votingClient)
+                    .receive()
+                    .response(HttpStatus.OK));
+        }
     
         @Given("^New voting \"([^\"]*)\"$")
         public void newVoting(String title) {
-            designer.variable("id", "citrus:randomUUID()");
-            designer.variable("title", title);
-            designer.variable("options", buildOptionsAsJsonArray("yes:no"));
-            designer.variable("closed", false);
-            designer.variable("report", false);
+            runner.variable("id", "citrus:randomUUID()");
+            runner.variable("title", title);
+            runner.variable("options", buildOptionsAsJsonArray("yes:no"));
+            runner.variable("closed", false);
+            runner.variable("report", false);
         }
-    
-        @Given("^voting options are \"([^\"]*)\"$")
-        public void votingOptions(String options) {
-            designer.variable("options", buildOptionsAsJsonArray(options));
-        }
-    
-        @Given("^reporting is enabled$")
-        public void reportingIsEnabled() {
-            designer.variable("report", true);
-        }
-    
+        
         @When("^(?:I|client) creates? the voting$")
         public void createVoting() {
-            designer.http()
-                .client(votingClient)
+            runner.http(action -> action.client(votingClient)
+                .send()
                 .post("/voting")
                 .contentType("application/json")
-                .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${options}, \"report\": ${report} }");
+                .payload("{ \"id\": \"${id}\", \"title\": \"${title}\", \"options\": ${options}, \"report\": ${report} }"));
     
-            designer.http().client(votingClient)
+            runner.http(action -> action.client(votingClient)
+                .receive()
                 .response(HttpStatus.OK)
-                .messageType(MessageType.JSON);
+                .messageType(MessageType.JSON));
         }
     
         @When("^(?:I|client) votes? for \"([^\"]*)\"$")
         public void voteFor(String option) {
-            designer.http().client(votingClient)
+            runner.http(action -> action.client(votingClient)
                     .send()
-                    .put("voting/${id}/" + option);
+                    .put("voting/${id}/" + option));
     
-            designer.http().client(votingClient)
+            runner.http(action -> action.client(votingClient)
                     .receive()
-                    .response(HttpStatus.OK);
+                    .response(HttpStatus.OK));
         }
         
         [...]
@@ -131,28 +199,82 @@ In order to enable Citrus Cucumber support we need to specify a special object f
     
     cucumber.api.java.ObjectFactory=cucumber.runtime.java.CitrusObjectFactory
     
-The object factory takes care on creating all step definition instances. The object factory is able to inject *@CitrusResource*
+The object factory takes care on creating all step definition instances. The object factory is able to inject *@CitrusResource* and *@CitrusEndpoint*
 annotated fields in step classes.
     
-The usage of this special object factory is mandatory in order to combine Citrus and Cucumber capabilities. 
-   
-We also have the usual *citrus-context.xml* Citrus Spring configuration that is automatically loaded within the object factory.
-So you can define and use Citrus components as usual within your test. In this sample we use a Http client component to call some
-REST API on the voting application.
+The endpoints are configured in a Spring bean Java configuration class. Here we define several Citrus endpoint components that are injected to the step classes.
+
+    @Configuration
+    public class CitrusEndpointConfig {
+    
+        @Bean
+        public HttpClient votingClient() {
+            return CitrusEndpoints.http()
+                    .client()
+                    .requestUrl("http://localhost:8080/rest/services")
+                    .build();
+        }
+        
+        @Bean
+        public JmsEndpoint createVotingEndpoint() {
+            return CitrusEndpoints.jms()
+                    .asynchronous()
+                    .connectionFactory(connectionFactory())
+                    .destination("jms.voting.create")
+                    .build();
+        }
+    
+        @Bean
+        public JmsEndpoint voteEndpoint() {
+            return CitrusEndpoints.jms()
+                    .asynchronous()
+                    .connectionFactory(connectionFactory())
+                    .destination("jms.voting.inbound")
+                    .build();
+        }
+    
+        @Bean
+        public JmsEndpoint reportingEndpoint() {
+            return CitrusEndpoints.jms()
+                    .asynchronous()
+                    .connectionFactory(connectionFactory())
+                    .destination("jms.voting.report")
+                    .build();
+        }
+    
+        @Bean
+        public ConnectionFactory connectionFactory() {
+            ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+            activeMQConnectionFactory.setBrokerURL("tcp://localhost:61616");
+            return activeMQConnectionFactory;
+        }
+    
+        @Bean
+        public MailServer mailServer() {
+            return CitrusEndpoints.mail()
+                    .server()
+                    .port(2222)
+                    .autoStart(true)
+                    .autoAccept(true)
+                    .build();
+        }
+    }
+    
+All beans defined here are candidates for dependency injection using the *@CitrusEndpoint* annotation.
 
 Run
 ---------
 
-The sample application uses Maven as build tool. So you can compile, package and test the
-sample with Maven.
+You can run the sample application on your local host. The application is built with Maven build tool. So you can compile, package and test the
+sample with Maven on command line calling.
  
      mvn clean install -Dembedded=true
     
-This executes the complete Maven build lifecycle. The embedded option automatically starts a Jetty web
+This executes the complete Maven build lifecycle. The embedded option automatically starts a Jetty web server
 container before the integration test phase. The voting Spring Boot system under test is automatically deployed and started in this phase.
 After that the Citrus test cases are able to interact with the voting application in the integration test phase.
 
-During the build you will see Citrus performing some integration tests.
+During the build you will see Citrus performing some integration tests and Cucumber to print some test reports, too.
 After the tests are finished the embedded Spring Boot infrastructure and the voting application are automatically stopped.
 
 System under test
@@ -167,7 +289,7 @@ Besides that you can start the voting application manually in order to access th
 
 You can start the sample voting application with this command.
 
-     mvn spring-boot:run
+     mvn -pl voting-app spring-boot:run
 
 Point your browser to
  
@@ -175,17 +297,21 @@ Point your browser to
 
 You will see the web UI of the voting application. Now you can play around with the web frontend and create some new votes.
 
-The application uses some JMS interface for sending reports to a simulated backend. In case the reporting is enabled you need
-to also start the ActiveMQ message broker. You can do this in a separate command line terminal.
+The application uses some JMS interface for sending reports to a simulated backend. In case we need
+to also start the ActiveMQ message broker for JMS message exchange. You enable JMS in the sample application by running.
 
-    mvn activemq:run
+    mvn -pl voting-app spring-boot:run -Dspring.profiles.active=jms
+    
+In a separate terminal run following command to start the ActiveMQ message broker:
+    
+    mvn -pl voting-app activemq:run
 
 Now we are ready to execute some Citrus tests in a separate JVM.
 
-Citrus test
+Test execution
 ---------
 
-Once the sample application is deployed and running you can execute the Citrus test cases.
+Once the sample application is deployed and running locally as described before you can execute the Citrus test cases.
 Open a separate command line terminal and navigate to the sample folder.
 
 Execute all Citrus tests by calling
@@ -205,10 +331,11 @@ Just start the Citrus test using the JUnit IDE integration in IntelliJ, Eclipse 
 Further information
 ---------
 
-For more information on Citrus see [www.citrusframework.org][2], including
-a complete [reference manual][3].
+For more information on Citrus see [citrusframework.org][2], Cucumber is located on [cucumber.io][3]. The Citrus Cucumber 
+extension is described in this [reference manual][4].
 
- [1]: http://www.citrusframework.org/img/brand-logo.png "Citrus"
- [2]: http://www.citrusframework.org
- [3]: http://www.citrusframework.org/reference/html/
- [4]: http://www.citrusframework.org/reference/html/cucumber.html
+ [1]: http://citrusframework.org/img/brand-logo.png "Citrus"
+ [2]: http://citrusframework.org
+ [3]: http://cucumber.io
+ [4]: http://citrusframework.org/reference/html/cucumber.html
+ [5]: http://cfp.devoxx.us/2017/talk/XZI-2824/Behavior_driven_integration_with_Cucumber_and_Citrus
