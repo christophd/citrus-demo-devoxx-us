@@ -17,6 +17,8 @@
 package com.consol.citrus.demo.voting;
 
 import com.consol.citrus.dsl.endpoint.CitrusEndpoints;
+import com.consol.citrus.dsl.runner.TestRunner;
+import com.consol.citrus.dsl.runner.TestRunnerBeforeTestSupport;
 import com.consol.citrus.http.client.HttpClient;
 import com.consol.citrus.jms.endpoint.JmsEndpoint;
 import com.consol.citrus.mail.server.MailServer;
@@ -82,5 +84,19 @@ public class CitrusEndpointConfig {
                 .autoStart(true)
                 .autoAccept(true)
                 .build();
+    }
+
+    @Bean
+    public TestRunnerBeforeTestSupport beforeTest() {
+        return new TestRunnerBeforeTestSupport() {
+            @Override
+            public void beforeTest(TestRunner runner) {
+                runner.purgeQueues(action -> action
+                        .connectionFactory(connectionFactory())
+                        .queue("jms.voting.create")
+                        .queue("jms.voting.report")
+                        .queue("jms.voting.inbound"));
+            }
+        };
     }
 }
