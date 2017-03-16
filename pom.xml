@@ -23,7 +23,6 @@
 
   <modules>
     <module>voting-app</module>
-    <module>voting-docker</module>
     <module>voting-jms</module>
     <module>voting-rest</module>
     <module>voting-selenium</module>
@@ -32,12 +31,6 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>io.fabric8</groupId>
-          <artifactId>docker-maven-plugin</artifactId>
-          <version>0.19.0</version>
-        </plugin>
-
         <plugin>
           <groupId>org.apache.activemq.tooling</groupId>
           <artifactId>activemq-maven-plugin</artifactId>
