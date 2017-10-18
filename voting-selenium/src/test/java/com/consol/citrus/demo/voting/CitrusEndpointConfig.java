@@ -43,7 +43,8 @@ public class CitrusEndpointConfig {
     @Bean
     public SeleniumBrowser browser() {
         return CitrusEndpoints.selenium()
-                .browserType(BrowserType.CHROME)
+                .browser()
+                .type(BrowserType.CHROME)
                 .build();
     }
 
